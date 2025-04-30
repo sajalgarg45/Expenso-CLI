@@ -1,6 +1,6 @@
 package expensetracker.models;
 
-import expensetracker.ds.LinkedList;
+import expensetracker.datastructures.LinkedList;
 
 public class Budget {
     private String name;
@@ -12,11 +12,32 @@ public class Budget {
         this.limit = lim;
         this.expenses = new LinkedList<>();
     }
-    public String getName() { return name; }
-    public void setName(String n) { this.name = n; }
-    public double getLimit() { return limit; }
-    public void setLimit(double lim) { this.limit = lim; }
-    public void addExpense(Expense e) { expenses.add(e); }
-    public double getSpent() { return expenses.sum(x -> x.getAmount()); }
-    public LinkedList<Expense> getExpenses() { return expenses; }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String n) {
+        this.name = n;
+    }
+
+    public double getLimit() {
+        return limit;
+    }
+
+    public void setLimit(double lim) {
+        this.limit = lim;
+    }
+
+    public void addExpense(Expense e) {
+        expenses.add(e);
+    }
+
+    public double getSpent() {
+        return expenses.sum(x -> x.getAmount());
+    }
+
+    public LinkedList<Expense> getExpenses() {
+        return expenses;
+    }
 }

@@ -4,9 +4,9 @@ import expensetracker.models.Budget;
 import expensetracker.models.Expense;
 import expensetracker.models.User;
 import expensetracker.datastore.DataStore;
-import expensetracker.ds.Stack;
-import expensetracker.ds.Queue;
-import expensetracker.ds.BinarySearchTree;  // ← NEW
+import expensetracker.datastructures.Stack;
+import expensetracker.datastructures.Queue;
+import expensetracker.datastructures.BinarySearchTree;  // ← NEW
 import expensetracker.utils.ConsoleUtils;
 
 import java.util.Scanner;

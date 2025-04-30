@@ -1,7 +1,7 @@
 package expensetracker.datastore;
 
 import expensetracker.models.User;
-import expensetracker.ds.LinkedList;
+import expensetracker.datastructures.LinkedList;
 
 public class DataStore {
     private LinkedList<User> users = new LinkedList<>();
