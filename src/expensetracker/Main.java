@@ -1,28 +1,23 @@
 package expensetracker;
 
-import expensetracker.models.Budget;
-import expensetracker.models.Expense;
-import expensetracker.models.User;
+import expensetracker.models.*;
 import expensetracker.datastore.DataStore;
-import expensetracker.datastructures.Stack;
-import expensetracker.datastructures.Queue;
-import expensetracker.datastructures.BinarySearchTree;  // ← NEW
+import expensetracker.datastructures.*;
 import expensetracker.utils.ConsoleUtils;
 
 import java.util.Scanner;
 
 public class Main {
     private static Scanner scanner = new Scanner(System.in);
-    private static DataStore store = new DataStore();
+    private static DataStore store  = new DataStore();
 
-    private static Stack deletedBudgets   = new Stack();
-    private static Stack deletedExpenses  = new Stack();
-    private static Queue recentActions    = new Queue();
+    private static Stack deletedBudgets  = new Stack();
+    private static Stack deletedExpenses = new Stack();
+    private static Queue recentActions   = new Queue();
 
     private static class DeletedExpense {
-        Budget  budget;
-        Expense expense;
-        DeletedExpense(Budget b, Expense e) { this.budget = b; this.expense = e; }
+        Budget budget; Expense expense;
+        DeletedExpense(Budget b, Expense e){ this.budget=b; this.expense=e; }
     }
 
     public static void main(String[] args) {
@@ -35,15 +30,10 @@ public class Main {
                     "0. Exit"
             });
             System.out.print("Select option: ");
-            int choice = Integer.parseInt(scanner.nextLine());
-            switch (choice) {
-                case 1: login();    break;
-                case 2: register(); break;
-                case 0: System.out.println("Goodbye!"); System.exit(0);
-                default:
-                    System.out.println("Invalid choice. Press Enter to continue.");
-                    scanner.nextLine();
-            }
+            int ch = Integer.parseInt(scanner.nextLine());
+            if      (ch == 1) login();
+            else if (ch == 2) register();
+            else if (ch == 0) break;
         }
     }
 
@@ -51,208 +41,189 @@ public class Main {
         System.out.print("User ID: ");    String uid = scanner.nextLine();
         System.out.print("Password: ");   String pw  = scanner.nextLine();
         User user = store.authenticate(uid, pw);
-        if (user != null) dashboard(user);
-        else {
-            System.out.println("Login failed. Press Enter."); scanner.nextLine();
+        if (user != null) {
+            dashboard(user);
         }
     }
 
     private static void register() {
         System.out.print("Choose User ID: ");   String uid = scanner.nextLine();
         System.out.print("Choose Password: ");  String pw  = scanner.nextLine();
-        boolean ok = store.register(new User(uid, pw));
-        System.out.println(ok ? "Registered! Press Enter."
-                : "Failed (ID exists). Press Enter.");
-        scanner.nextLine();
+        if (store.register(new User(uid, pw))) {
+            System.out.println("Registered! Press Enter."); scanner.nextLine();
+        }
     }
 
     private static void dashboard(User user) {
         while (true) {
-            double totalBudget = user.getBudgetList().sum(b -> b.getLimit());
-            double totalSpent  = user.getBudgetList().sum(b -> b.getSpent());
-            double savings     = totalBudget - totalSpent;
-            int    count       = user.getBudgetList().size();
-
+            double totalB = user.getBudgetList().sum(b -> b.getLimit());
+            double totalS = user.getBudgetList().sum(b -> b.getSpent());
             ConsoleUtils.clearScreen();
             ConsoleUtils.printBox(new String[]{
-                    "Dashboard for " + user.getId(),
-                    "Budgets: " + count,
-                    String.format("Total Budget: %.2f", totalBudget),
-                    String.format("  Spent: %.2f", totalSpent),
-                    String.format("Savings: %.2f", savings)
+                    "Dashboard: " + user.getId(),
+                    "Budgets: " + user.getBudgetList().size(),
+                    String.format("Total: %.2f", totalB),
+                    String.format("Spent: %.2f", totalS),
+                    String.format("Save : %.2f", totalB - totalS)
             });
-            ConsoleUtils.printGraph(totalSpent, totalBudget);
-
+            ConsoleUtils.printGraph(totalS, totalB);
             ConsoleUtils.printBox(new String[]{
-                    "1. Manage Budgets",
-                    "2. View ALl Expenses",
-                    "3. Undo Last Delete",
-                    "4. Show Recent Adds",
-                    "0. Logout"
+                    "1.Manage Budgets",
+                    "2.View All Expenses",
+                    "3.Undo Delete",
+                    "4.Recent Actions",
+                    "5.Delete Account  ",
+                    "0.Logout"
             });
-            System.out.print("Choose: ");
-            int c = Integer.parseInt(scanner.nextLine());
 
+            int c = Integer.parseInt(scanner.nextLine());
             if      (c == 1) manageBudgets(user);
             else if (c == 2) viewAllExpenses(user);
             else if (c == 3) undoDeletion(user);
             else if (c == 4) showRecentAdds();
-            else if (c == 0) break;
+            else if (c == 5) {
+                ConsoleUtils.clearScreen();
+                ConsoleUtils.printBox(new String[]{
+                        "Delete Account", "Are you sure? (y/N)"
+                });
+                String ans = scanner.nextLine();
+                if (ans.equalsIgnoreCase("y")) {
+                    if (store.deleteUser(user)) {
+                        ConsoleUtils.printBox(new String[]{"Account deleted"});
+                        System.out.println("Press Enter to continue.");
+                        scanner.nextLine();
+                        break; // back to welcome
+                    }
+                }
+            }
+            else if (c == 0) {
+                break; // logout
+            }
         }
     }
 
-    private static void manageBudgets(User user) {
+    private static void manageBudgets(User u) {
         while (true) {
             ConsoleUtils.clearScreen();
             ConsoleUtils.printBox(new String[]{
                     "Manage Budgets",
-                    "1. List Budgets",
-                    "2. Create Budget",
-                    "3. Search Budget",
-                    "4. Show Sorted Budgets",  // ← new
-                    "0. Back"
+                    "1.List Budgets",
+                    "2.Create Budget",
+                    "3.Search Budget",
+                    "4.Sorted Budgets",
+                    "0.Back"
             });
-            System.out.print("Choose: ");
             int c = Integer.parseInt(scanner.nextLine());
-            if      (c == 1) listBudgets(user);
-            else if (c == 2) createBudget(user);
-            else if (c == 3) searchBudgets(user);
-            else if (c == 4) showSortedBudgets(user);  // ← new
-            else if (c == 0) break;
+            if      (c == 1) listBudgets(u);
+            else if (c == 2) createBudget(u);
+            else if (c == 3) searchBudgets(u);
+            else if (c == 4) showSortedBudgets(u);
+            else if (c == 0) {
+                store.save();
+                break;
+            }
         }
     }
 
-
-    private static void listBudgets(User user) {
+    private static void listBudgets(User u) {
         ConsoleUtils.clearScreen();
-
-        int size = user.getBudgetList().size();
-        String[] lines = new String[size + 2];
+        int sz = u.getBudgetList().size();
+        String[] lines = new String[sz + 2];
         lines[0] = "Select Budget:";
-
-        // Print using getAt so index 0 = first‐created, index size-1 = last‐created
-        for (int idx = 0; idx < size; idx++) {
-            Budget b = user.getBudgetList().getAt(idx);
-            lines[idx + 1] = (idx + 1) + ") "
-                    + b.getName()
-                    + "  Limit:" + b.getLimit()
-                    + "  Spent:" + b.getSpent();
+        for (int i = 0; i < sz; i++) {
+            Budget b = u.getBudgetList().getAt(i);
+            lines[i + 1] = (i + 1) + ") " + b.getName()
+                    + " L:" + b.getLimit()
+                    + " S:" + b.getSpent();
         }
-
-        lines[size + 1] = "0) Back";
+        lines[sz + 1] = "0) Back";
         ConsoleUtils.printBox(lines);
-
-        System.out.print("Choose: ");
         int sel = Integer.parseInt(scanner.nextLine());
-        if (sel > 0 && sel <= size) {
-            // sel 1 maps to getAt(0), sel 2 → getAt(1), etc.
-            budgetActions(user, user.getBudgetList().getAt(sel - 1));
+        if (sel > 0 && sel <= sz) {
+            budgetActions(u, u.getBudgetList().getAt(sel - 1));
         }
     }
 
-    private static void createBudget(User user) {
-        System.out.print("Budget Name: ");           String name = scanner.nextLine();
-        System.out.print("Limit Amount: ");          double lim  = Double.parseDouble(scanner.nextLine());
-        Budget b = new Budget(name, lim);
-        user.getBudgetList().add(b);
-        recentActions.enqueue("Created budget: " + name);
+    private static void createBudget(User u) {
+        System.out.print("Name: "); String n = scanner.nextLine();
+        System.out.print("Limit: "); double l = Double.parseDouble(scanner.nextLine());
+        Budget b = new Budget(n, l);
+        u.getBudgetList().add(b);
+        recentActions.enqueue("Created budget:" + n);
+        store.save();
     }
 
-    private static void budgetActions(User user, Budget b) {
+    private static void budgetActions(User u, Budget b) {
         while (true) {
             ConsoleUtils.clearScreen();
             ConsoleUtils.printBox(new String[]{
                     "Budget: " + b.getName(),
-                    "1. Add Expense",
-                    "2. List Expenses",
-                    "3. Edit Budget",
-                    "4. Delete Budget",
-                    "0. Back"
+                    "1.Add Exp",
+                    "2.List Exp",
+                    "3.Edit",
+                    "4.Delete",
+                    "0.Back"
             });
-            System.out.print("Choose: "); int c = Integer.parseInt(scanner.nextLine());
-
+            int c = Integer.parseInt(scanner.nextLine());
             if (c == 1) {
-                // Add Expense
-                System.out.print("Expense Desc: ");   String desc = scanner.nextLine();
-                System.out.print("Amount: ");          double amt  = Double.parseDouble(scanner.nextLine());
-                if (b.getSpent() + amt > b.getLimit()) {
-                    ConsoleUtils.printBox(new String[]{
-                            "ERROR: Over Budget!",
-                            "Limit: " + b.getLimit(),
-                            "Current Spent: " + b.getSpent(),
-                            "Attempted: " + amt
-                    });
-                    System.out.println("Press Enter to continue.");
+                System.out.print("Desc: "); String d = scanner.nextLine();
+                System.out.print("Amt : "); double a = Double.parseDouble(scanner.nextLine());
+                if (b.getSpent() + a > b.getLimit()) {
+                    ConsoleUtils.printBox(new String[]{"Over Budget!"});
                     scanner.nextLine();
                 } else {
-                    Expense e = new Expense(desc, amt);
+                    Expense e = new Expense(d, a);
                     b.addExpense(e);
-                    recentActions.enqueue(
-                            "Added expense \"" + desc + "\" ("+amt+") to " + b.getName()
-                    );
+                    recentActions.enqueue("Added exp " + d);
+                    store.save();
                 }
             }
-            else if (c == 2) {
-                // List / Edit / Delete Expenses
-                listExpenses(b);
-            }
+            else if (c == 2) listExpenses(b);
             else if (c == 3) {
-                // Edit Budget (rename & limit)
-                System.out.print("New Name (Enter to skip): ");
-                String newName = scanner.nextLine();
-                if (!newName.isEmpty()) {
+                System.out.print("New name (Enter skip): "); String nn = scanner.nextLine();
+                if (!nn.isEmpty()) {
                     String old = b.getName();
-                    b.setName(newName);
-                    recentActions.enqueue("Renamed budget: " + old + " → " + newName);
+                    b.setName(nn);
+                    recentActions.enqueue("Renamed " + old + "→" + nn);
                 }
-                System.out.print("New Limit (Enter to skip): ");
-                String limStr = scanner.nextLine();
-                if (!limStr.isEmpty()) {
-                    double oldLim = b.getLimit();
-                    double newLim = Double.parseDouble(limStr);
-                    b.setLimit(newLim);
-                    recentActions.enqueue(
-                            "Changed limit for " + b.getName()
-                                    + ": " + oldLim + " → " + newLim
-                    );
+                System.out.print("New lim  (Enter skip): "); String ls = scanner.nextLine();
+                if (!ls.isEmpty()) {
+                    double old = b.getLimit(), nv = Double.parseDouble(ls);
+                    b.setLimit(nv);
+                    recentActions.enqueue("Limit " + old + "→" + nv);
                 }
+                store.save();
             }
             else if (c == 4) {
-                // Delete Budget
-                recentActions.enqueue("Deleted budget: " + b.getName());
+                u.getBudgetList().remove(b);
                 deletedBudgets.push(b);
-                user.getBudgetList().remove(b);
+                recentActions.enqueue("Deleted budget:" + b.getName());
+                store.save();
                 break;
             }
-            else if (c == 0) {
-                break;
-            }
+            else if (c == 0) break;
         }
     }
 
     private static void listExpenses(Budget b) {
         ConsoleUtils.clearScreen();
-        int size = b.getExpenses().size();
-        if (size == 0) {
-            ConsoleUtils.printBox(new String[]{"No expenses in " + b.getName()});
-            System.out.println("Press Enter to continue.");
+        int sz = b.getExpenses().size();
+        if (sz == 0) {
+            ConsoleUtils.printBox(new String[]{"No expenses"});
             scanner.nextLine();
             return;
         }
-
-        String[] lines = new String[size + 2];
-        lines[0] = "Expenses for " + b.getName() + ":";
-        int i = 1;
-        for (Expense e : b.getExpenses()) {
-            lines[i++] = (i-1) + ") " + e.getDesc() + ": " + e.getAmount();
+        String[] lines = new String[sz + 2];
+        lines[0] = "Select Expense:";
+        for (int i = 0; i < sz; i++) {
+            Expense e = b.getExpenses().getAt(i);
+            lines[i + 1] = (i + 1) + ") " + e.getDesc() + ":" + e.getAmount();
         }
-        lines[i] = "0) Back";
+        lines[sz + 1] = "0) Back";
         ConsoleUtils.printBox(lines);
-
-        System.out.print("Choose: ");
         int sel = Integer.parseInt(scanner.nextLine());
-        if (sel > 0 && sel <= size) {
-            expenseActions(b, b.getExpenses().getAt(sel-1));
+        if (sel > 0 && sel <= sz) {
+            expenseActions(b, b.getExpenses().getAt(sel - 1));
         }
     }
 
@@ -260,204 +231,137 @@ public class Main {
         while (true) {
             ConsoleUtils.clearScreen();
             ConsoleUtils.printBox(new String[]{
-                    "Expense: " + e.getDesc() + " (" + e.getAmount() + ")",
-                    "1. Edit Expense",
-                    "2. Delete Expense",
-                    "0. Back"
+                    "Expense:" + e.getDesc() + "(" + e.getAmount() + ")",
+                    "1.Edit",
+                    "2.Delete",
+                    "0.Back"
             });
-            System.out.print("Choose: "); int c = Integer.parseInt(scanner.nextLine());
-
+            int c = Integer.parseInt(scanner.nextLine());
             if (c == 1) {
-                System.out.print("New Desc (Enter to skip): ");
-                String d = scanner.nextLine();
-                if (!d.isEmpty()) {
-                    e.setDesc(d);
-                    recentActions.enqueue("Edited expense desc to \""+d+"\" in "+b.getName());
+                System.out.print("New desc (Enter skip): "); String nd = scanner.nextLine();
+                if (!nd.isEmpty()) { e.setDesc(nd); recentActions.enqueue("Exp desc→" + nd); }
+                System.out.print("New amt  (Enter skip): "); String na = scanner.nextLine();
+                if (!na.isEmpty()) {
+                    double old = e.getAmount();
+                    e.setAmount(Double.parseDouble(na));
+                    recentActions.enqueue("Exp amt " + old + "→" + e.getAmount());
                 }
-                System.out.print("New Amount (Enter to skip): ");
-                String aStr = scanner.nextLine();
-                if (!aStr.isEmpty()) {
-                    double oldAmt = e.getAmount();
-                    e.setAmount(Double.parseDouble(aStr));
-                    recentActions.enqueue(
-                            "Edited expense amount in "+b.getName()
-                                    +": "+oldAmt+" → "+e.getAmount()
-                    );
-                }
+                store.save();
             }
             else if (c == 2) {
-                recentActions.enqueue(
-                        "Deleted expense \""+e.getDesc()+"\" from "+b.getName()
-                );
-                deletedExpenses.push(new DeletedExpense(b, e));
                 b.getExpenses().remove(e);
+                deletedExpenses.push(new DeletedExpense(b, e));
+                recentActions.enqueue("Deleted exp:" + e.getDesc());
+                store.save();
                 break;
             }
-            else if (c == 0) {
-                break;
-            }
+            else if (c == 0) break;
         }
     }
 
-    private static void viewAllExpenses(User user) {
+    private static void viewAllExpenses(User u) {
         ConsoleUtils.clearScreen();
-        for (Budget b : user.getBudgetList()) {
+        for (Budget b : u.getBudgetList()) {
             System.out.println("-- " + b.getName());
             for (Expense e : b.getExpenses()) {
                 System.out.println("   " + e.getDesc() + ": " + e.getAmount());
             }
         }
-        System.out.println("Press Enter to continue.");
         scanner.nextLine();
     }
 
-    private static void undoDeletion(User user) {
+    private static void undoDeletion(User u) {
         ConsoleUtils.clearScreen();
         if (!deletedExpenses.isEmpty()) {
             DeletedExpense de = (DeletedExpense) deletedExpenses.pop();
             de.budget.addExpense(de.expense);
-            ConsoleUtils.printBox(new String[]{
-                    "Undo Delete",
-                    "Restored expense: " + de.expense.getDesc()
-            });
-        }
-        else if (!deletedBudgets.isEmpty()) {
+            ConsoleUtils.printBox(new String[]{"Restored exp:" + de.expense.getDesc()});
+        } else if (!deletedBudgets.isEmpty()) {
             Budget b = (Budget) deletedBudgets.pop();
-            user.getBudgetList().add(b);
-            ConsoleUtils.printBox(new String[]{
-                    "Undo Delete",
-                    "Restored budget: " + b.getName()
-            });
+            u.getBudgetList().add(b);
+            ConsoleUtils.printBox(new String[]{"Restored budget:" + b.getName()});
+        } else {
+            ConsoleUtils.printBox(new String[]{"Nothing to undo"});
         }
-        else {
-            ConsoleUtils.printBox(new String[]{
-                    "Undo Delete",
-                    "Nothing to undo"
-            });
-        }
-        System.out.println("Press Enter to continue.");
         scanner.nextLine();
+        store.save();
     }
 
     private static void showRecentAdds() {
         ConsoleUtils.clearScreen();
         ConsoleUtils.printBox(new String[]{"Recent Actions"});
-        Queue temp = new Queue();
+        Queue tmp = new Queue();
         while (!recentActions.isEmpty()) {
-            Object act = recentActions.dequeue();
-            System.out.println(" - " + act);
-            temp.enqueue(act);
+            Object a = recentActions.dequeue();
+            System.out.println(" - " + a);
+            tmp.enqueue(a);
         }
-        // restore
-        while (!temp.isEmpty()) {
-            recentActions.enqueue(temp.dequeue());
-        }
-        System.out.println("Press Enter to continue.");
+        while (!tmp.isEmpty()) recentActions.enqueue(tmp.dequeue());
         scanner.nextLine();
     }
 
-    private static void searchBudgets(User user) {
+    private static void searchBudgets(User u) {
         ConsoleUtils.clearScreen();
-        // Build BST of budget names
-        BinarySearchTree tree = new BinarySearchTree();
-        for (int i = 0; i < user.getBudgetList().size(); i++) {
-            tree.insert(user.getBudgetList().getAt(i).getName());
+        BinarySearchTree bst = new BinarySearchTree();
+        for (int i = 0; i < u.getBudgetList().size(); i++) {
+            bst.insert(u.getBudgetList().getAt(i).getName());
         }
-
-        System.out.print("Enter budget name to search: ");
-        String query = scanner.nextLine();
-
-        if (tree.contains(query)) {
-            // Find its index in creation order via getAt
-            int size = user.getBudgetList().size();
-            int foundIdx = -1;
-            for (int i = 0; i < size; i++) {
-                if (user.getBudgetList().getAt(i).getName().equals(query)) {
-                    foundIdx = i;
-                    break;
+        System.out.print("Name to search: ");
+        String q = scanner.nextLine();
+        if (bst.contains(q)) {
+            int idx = -1;
+            for (int i = 0; i < u.getBudgetList().size(); i++) {
+                if (u.getBudgetList().getAt(i).getName().equals(q)) {
+                    idx = i; break;
                 }
             }
-
-            if (foundIdx >= 0) {
-                ConsoleUtils.printBox(new String[]{
-                        "Found budget #" + (foundIdx + 1) + ": " + query
-                });
-            } else {
-                // Fallback (shouldn't happen if BST contained it)
-                ConsoleUtils.printBox(new String[]{
-                        "Found budget: " + query
-                });
-            }
+            ConsoleUtils.printBox(new String[]{"Found #" + (idx + 1) + ": " + q});
         } else {
-            ConsoleUtils.printBox(new String[]{
-                    "No budget named \"" + query + "\""
-            });
+            ConsoleUtils.printBox(new String[]{"No budget named \"" + q + "\""});
         }
-
-        System.out.println("Press Enter to continue.");
         scanner.nextLine();
     }
 
-    private static void showSortedBudgets(User user) {
+    private static void showSortedBudgets(User u) {
         ConsoleUtils.clearScreen();
-        int size = user.getBudgetList().size();
-        if (size == 0) {
-            ConsoleUtils.printBox(new String[]{"No budgets to show."});
-            System.out.println("Press Enter to continue.");
+        int sz = u.getBudgetList().size();
+        if (sz == 0) {
+            ConsoleUtils.printBox(new String[]{"No budgets"});
             scanner.nextLine();
             return;
         }
-
-        // 1) Extract into an array
-        Budget[] arr = new Budget[size];
-        for (int i = 0; i < size; i++) {
-            arr[i] = user.getBudgetList().getAt(i);
+        Budget[] arr = new Budget[sz];
+        for (int i = 0; i < sz; i++) arr[i] = u.getBudgetList().getAt(i);
+        quickSort(arr, 0, sz - 1);
+        String[] lines = new String[sz + 1];
+        lines[0] = "Sorted by limit:";
+        for (int i = 0; i < sz; i++) {
+            lines[i + 1] = (i + 1) + ") " + arr[i].getName()
+                    + " L:" + arr[i].getLimit()
+                    + " S:" + arr[i].getSpent();
         }
-
-        // 2) Sort by limit
-        quickSort(arr, 0, size - 1);
-
-        // 3) Build lines for the box
-        String[] lines = new String[size + 1];
-        lines[0] = "Budgets sorted by Limit:";
-        for (int i = 0; i < size; i++) {
-            lines[i + 1] = (i + 1)
-                    + ") " + arr[i].getName()
-                    + "  Limit:" + arr[i].getLimit()
-                    + "  Spent:" + arr[i].getSpent();
-        }
-
-        // 4) Display
         ConsoleUtils.printBox(lines);
-        System.out.println("Press Enter to continue.");
         scanner.nextLine();
     }
 
-    /** Quicksort on arrays of Budget, comparing getLimit() */
-    private static void quickSort(Budget[] arr, int low, int high) {
-        if (low < high) {
-            int pi = partition(arr, low, high);
-            quickSort(arr, low, pi - 1);
-            quickSort(arr, pi + 1, high);
+    private static void quickSort(Budget[] a, int lo, int hi) {
+        if (lo < hi) {
+            int p = partition(a, lo, hi);
+            quickSort(a, lo, p - 1);
+            quickSort(a, p + 1, hi);
         }
     }
 
-    private static int partition(Budget[] arr, int low, int high) {
-        double pivot = arr[high].getLimit();
-        int i = low - 1;
-        for (int j = low; j < high; j++) {
-            if (arr[j].getLimit() <= pivot) {
+    private static int partition(Budget[] a, int lo, int hi) {
+        double pivot = a[hi].getLimit();
+        int i = lo - 1;
+        for (int j = lo; j < hi; j++) {
+            if (a[j].getLimit() <= pivot) {
                 i++;
-                Budget temp = arr[i];
-                arr[i] = arr[j];
-                arr[j] = temp;
+                Budget t = a[i]; a[i] = a[j]; a[j] = t;
             }
         }
-        // swap pivot into place
-        Budget temp = arr[i + 1];
-        arr[i + 1] = arr[high];
-        arr[high] = temp;
+        Budget t = a[i + 1]; a[i + 1] = a[hi]; a[hi] = t;
         return i + 1;
     }
-
 }

@@ -1,0 +1,22 @@
+[
+  {
+    "id":"sajal",
+    "password":"sajal",
+    "budgets":[
+      {
+        "name":"EMI",
+        "limit":2000.0,
+        "expenses":[
+          {
+            "desc":"Bike",
+            "amount":0.0
+          },
+          {
+            "desc":"Car",
+            "amount":500.0
+          }
+        ]
+      }
+    ]
+  }
+]

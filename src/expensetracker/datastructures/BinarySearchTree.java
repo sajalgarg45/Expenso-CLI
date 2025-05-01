@@ -1,54 +1,20 @@
 package expensetracker.datastructures;
 
-/**
- * Basic unbalanced BST; raw Comparable nodes
- */
 public class BinarySearchTree {
-    private class Node {
-        Comparable val;
-        Node left, right;
-
-        Node(Comparable v) {
-            val = v;
-        }
-    }
-
+    private class Node { Comparable val; Node left,right; Node(Comparable v){val=v;} }
     private Node root;
-
-    public void insert(Comparable v) {
-        root = insertRec(root, v);
+    public void insert(Comparable v){ root=insertRec(root,v); }
+    private Node insertRec(Node n, Comparable v){
+        if(n==null) return new Node(v);
+        if(v.compareTo(n.val)<0) n.left=insertRec(n.left,v);
+        else n.right=insertRec(n.right,v);
+        return n;
     }
-
-    private Node insertRec(Node node, Comparable v) {
-        if (node == null) return new Node(v);
-        if (v.compareTo(node.val) < 0)
-            node.left = insertRec(node.left, v);
-        else
-            node.right = insertRec(node.right, v);
-        return node;
-    }
-
-    public void inorder() {
-        inorderRec(root);
-    }
-
-    private void inorderRec(Node node) {
-        if (node == null) return;
-        inorderRec(node.left);
-        System.out.println(node.val);
-        inorderRec(node.right);
-    }
-
-    public boolean contains(Comparable v) {
-        return containsRec(root, v);
-    }
-
-    private boolean containsRec(Node node, Comparable v) {
-        if (node == null) return false;
-        int cmp = v.compareTo(node.val);
-        if (cmp == 0) return true;
-        return cmp < 0
-                ? containsRec(node.left, v)
-                : containsRec(node.right, v);
+    public boolean contains(Comparable v){ return containsRec(root,v); }
+    private boolean containsRec(Node n, Comparable v){
+        if(n==null) return false;
+        int c=v.compareTo(n.val);
+        if(c==0) return true;
+        return c<0 ? containsRec(n.left,v) : containsRec(n.right,v);
     }
 }

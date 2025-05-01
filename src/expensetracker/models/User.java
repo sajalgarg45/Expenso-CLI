@@ -12,15 +12,9 @@ public class User {
         this.budgets = new LinkedList<>();
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public boolean checkPw(String pw) {
-        return password.equals(pw);
-    }
-
-    public LinkedList<Budget> getBudgetList() {
-        return budgets;
-    }
+    public String getId() { return id; }
+    public String getPassword() { return password; }
+    public void setPassword(String pw) { this.password = pw; }
+    public boolean checkPw(String pw) { return password.equals(pw); }
+    public LinkedList<Budget> getBudgetList() { return budgets; }
 }
