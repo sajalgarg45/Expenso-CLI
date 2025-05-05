@@ -1,0 +1,37 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:138.0) Gecko/20100101 Firefox/138.0" version="26.2.14">
+  <diagram name="Page-1" id="Ib6AIXi1rvFYkrLMfcud">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="HfzThmM03I0dAXILb71a-1" value="File System" style="whiteSpace=wrap;strokeWidth=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="20" y="173" width="198" height="104" as="geometry" />
+        </mxCell>
+        <mxCell id="HfzThmM03I0dAXILb71a-2" value="User Device" style="whiteSpace=wrap;strokeWidth=1;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="238" y="20" width="330" height="330" as="geometry" />
+        </mxCell>
+        <mxCell id="HfzThmM03I0dAXILb71a-3" value="Operating System" style="whiteSpace=wrap;strokeWidth=2;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="310" y="270" width="186" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="HfzThmM03I0dAXILb71a-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontStyle=1" edge="1" parent="1" source="HfzThmM03I0dAXILb71a-4" target="HfzThmM03I0dAXILb71a-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="HfzThmM03I0dAXILb71a-4" value="Java Virtual Machine&#xa;(JVM)" style="whiteSpace=wrap;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="299" y="173" width="208" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="HfzThmM03I0dAXILb71a-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;fontStyle=1" edge="1" parent="1" source="HfzThmM03I0dAXILb71a-5" target="HfzThmM03I0dAXILb71a-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="HfzThmM03I0dAXILb71a-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontStyle=1" edge="1" parent="1" source="HfzThmM03I0dAXILb71a-5" target="HfzThmM03I0dAXILb71a-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="HfzThmM03I0dAXILb71a-5" value="Expenso-CLI Application" style="whiteSpace=wrap;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="273" y="45" width="260" height="78" as="geometry" />
+        </mxCell>
+        <mxCell id="HfzThmM03I0dAXILb71a-6" value="data.json" style="whiteSpace=wrap;strokeWidth=2;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="55" y="198" width="128" height="54" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
