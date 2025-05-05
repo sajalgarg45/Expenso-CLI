@@ -20,6 +20,46 @@ public class Main {
         DeletedExpense(Budget b, Expense e){ this.budget=b; this.expense=e; }
     }
 
+    private static String readString(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            try {
+                String line = scanner.nextLine();
+                if (!line.trim().isEmpty()) {
+                    return line;
+                }
+                System.out.println("Input cannot be empty. Please try again.");
+            } catch (Exception e) {
+                System.out.println("Input error. Please try again.");
+                scanner = new Scanner(System.in);
+            }
+        }
+    }
+
+    private static int readInt(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String line = scanner.nextLine().trim();
+            try {
+                return Integer.parseInt(line);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a whole number.");
+            }
+        }
+    }
+
+    private static double readDouble(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String line = scanner.nextLine().trim();
+            try {
+                return Double.parseDouble(line);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a numeric value (e.g. 123.45).");
+            }
+        }
+    }
+
     public static void main(String[] args) {
         while (true) {
             ConsoleUtils.clearScreen();
@@ -38,20 +78,26 @@ public class Main {
     }
 
     private static void login() {
-        System.out.print("User ID: ");    String uid = scanner.nextLine();
-        System.out.print("Password: ");   String pw  = scanner.nextLine();
+        String uid = readString("User ID: ");
+        String pw  = readString("Password: ");
         User user = store.authenticate(uid, pw);
         if (user != null) {
             dashboard(user);
+        } else {
+            System.out.println("Login failed. Press Enter to continue.");
+            scanner.nextLine();
         }
     }
 
     private static void register() {
-        System.out.print("Choose User ID: ");   String uid = scanner.nextLine();
-        System.out.print("Choose Password: ");  String pw  = scanner.nextLine();
+        String uid = readString("Choose User ID: ");
+        String pw  = readString("Choose Password: ");
         if (store.register(new User(uid, pw))) {
-            System.out.println("Registered! Press Enter."); scanner.nextLine();
+            System.out.println("Registered! Press Enter to continue.");
+        } else {
+            System.out.println("Registration failed (ID exists). Press Enter to continue.");
         }
+        scanner.nextLine();
     }
 
     private static void dashboard(User user) {
@@ -76,7 +122,7 @@ public class Main {
                     "0.Logout"
             });
 
-            int c = Integer.parseInt(scanner.nextLine());
+            int c = readInt("Choose: ");
             if      (c == 1) manageBudgets(user);
             else if (c == 2) viewAllExpenses(user);
             else if (c == 3) undoDeletion(user);
@@ -84,19 +130,25 @@ public class Main {
             else if (c == 5) {
                 ConsoleUtils.clearScreen();
                 ConsoleUtils.printBox(new String[]{
-                        "Delete Account", "Are you sure? (y/N)"
+                        "Delete Account",
+                        "Are you sure? (y/N)"
                 });
-                String ans = scanner.nextLine();
+                String ans = readString("> ");
                 if (ans.equalsIgnoreCase("y")) {
                     if (store.deleteUser(user)) {
                         ConsoleUtils.printBox(new String[]{"Account deleted"});
                         System.out.println("Press Enter to continue.");
                         scanner.nextLine();
-                        break; // back to welcome
+                        break;
+                    } else {
+                        ConsoleUtils.printBox(new String[]{"Error deleting account"});
+                        System.out.println("Press Enter to continue.");
+                        scanner.nextLine();
                     }
                 }
             }
             else if (c == 0) {
+                store.save();
                 break; // logout
             }
         }
@@ -145,8 +197,8 @@ public class Main {
     }
 
     private static void createBudget(User u) {
-        System.out.print("Name: "); String n = scanner.nextLine();
-        System.out.print("Limit: "); double l = Double.parseDouble(scanner.nextLine());
+        String n = readString("Name: ");
+        double l = readDouble("Limit: ");
         Budget b = new Budget(n, l);
         u.getBudgetList().add(b);
         recentActions.enqueue("Created budget:" + n);
@@ -164,7 +216,7 @@ public class Main {
                     "4.Delete",
                     "0.Back"
             });
-            int c = Integer.parseInt(scanner.nextLine());
+            int c = readInt("Choose: ");
             if (c == 1) {
                 System.out.print("Desc: "); String d = scanner.nextLine();
                 System.out.print("Amt : "); double a = Double.parseDouble(scanner.nextLine());
@@ -188,9 +240,15 @@ public class Main {
                 }
                 System.out.print("New lim  (Enter skip): "); String ls = scanner.nextLine();
                 if (!ls.isEmpty()) {
-                    double old = b.getLimit(), nv = Double.parseDouble(ls);
-                    b.setLimit(nv);
-                    recentActions.enqueue("Limit " + old + "→" + nv);
+                    try {
+                        double nv = Double.parseDouble(ls);
+                        double old = b.getLimit();
+                        b.setLimit(nv);
+                        recentActions.enqueue("Limit " + old + "→" + nv);
+                    } catch (NumberFormatException ex) {
+                        System.out.println("Invalid number; skipping limit change.");
+                        scanner.nextLine();
+                    }
                 }
                 store.save();
             }
@@ -242,9 +300,14 @@ public class Main {
                 if (!nd.isEmpty()) { e.setDesc(nd); recentActions.enqueue("Exp desc→" + nd); }
                 System.out.print("New amt  (Enter skip): "); String na = scanner.nextLine();
                 if (!na.isEmpty()) {
-                    double old = e.getAmount();
-                    e.setAmount(Double.parseDouble(na));
-                    recentActions.enqueue("Exp amt " + old + "→" + e.getAmount());
+                    try {
+                        double old = e.getAmount();
+                        e.setAmount(Double.parseDouble(na));
+                        recentActions.enqueue("Exp amt " + old + "→" + e.getAmount());
+                    } catch (NumberFormatException ex) {
+                        System.out.println("Invalid number; skipping amount change.");
+                        scanner.nextLine();
+                    }
                 }
                 store.save();
             }
@@ -306,8 +369,7 @@ public class Main {
         for (int i = 0; i < u.getBudgetList().size(); i++) {
             bst.insert(u.getBudgetList().getAt(i).getName());
         }
-        System.out.print("Name to search: ");
-        String q = scanner.nextLine();
+        String q = readString("Name to search: ");
         if (bst.contains(q)) {
             int idx = -1;
             for (int i = 0; i < u.getBudgetList().size(); i++) {
