@@ -7,15 +7,17 @@ import expensetracker.datastructures.LinkedList;
 
 import java.io.*;
 
+// Manages data persistence for users, budgets, and expenses
 public class DataStore {
     private static final String DATA_FILE = "data.json";
     private LinkedList<User> users = new LinkedList<>();
 
+    // Constructor: Loads data from the JSON file into memory
     public DataStore() {
         load();
     }
 
-    /** Register and persist */
+    // Registers a new user if the ID is unique
     public boolean register(User u) {
         for (User ex : users)
             if (ex.getId().equals(u.getId()))
@@ -25,7 +27,7 @@ public class DataStore {
         return true;
     }
 
-    /** Authenticate only */
+    // Authenticates a user by ID and password
     public User authenticate(String id, String pw) {
         for (User u : users)
             if (u.getId().equals(id) && u.checkPw(pw))
@@ -33,7 +35,7 @@ public class DataStore {
         return null;
     }
 
-    /** Delete a user and persist */
+    // Deletes a user and saves the updated list
     public boolean deleteUser(User u) {
         int before = users.size();
         users.remove(u);
@@ -44,7 +46,7 @@ public class DataStore {
         return false;
     }
 
-    /** Serialize all users→budgets→expenses to data.json */
+    // Saves the in-memory data to the JSON file
     public void save() {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(DATA_FILE))) {
             bw.write("[\n");
@@ -79,7 +81,7 @@ public class DataStore {
         }
     }
 
-    /** Load from data.json into memory */
+    // Loads data from the JSON file into memory
     private void load() {
         File f = new File(DATA_FILE);
         if (!f.exists()) return;
@@ -123,10 +125,12 @@ public class DataStore {
         }
     }
 
-    /** Helpers to parse/write JSON by hand */
+    // Escapes special characters in strings for JSON
     private String escape(String s) {
         return s.replace("\\", "\\\\").replace("\"", "\\\"");
     }
+
+    // Extracts a substring between two markers
     private String between(String line, String start, String end) {
         int i = line.indexOf(start) + start.length();
         int j = end.isEmpty() ? line.length() : line.indexOf(end, i);
