@@ -9,8 +9,19 @@ public class Expense {
         this.amount = a;
     }
 
-    public String getDesc() { return desc; }
-    public void setDesc(String d) { this.desc = d; }
-    public double getAmount() { return amount; }
-    public void setAmount(double a) { this.amount = a; }
+    public String getDesc() {
+        return desc;
+    }
+
+    public void setDesc(String d) {
+        this.desc = d;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(double a) {
+        this.amount = a;
+    }
 }

@@ -114,9 +114,9 @@ public class DataStore {
                     currentBudget.getExpenses().add(new Expense(desc, 0));
                 }
                 else if (line.startsWith("\"amount\"") && currentBudget != null) {
-                    String amt = between(line, "\"amount\":", line.endsWith(",")?"," : "");
+                    String amt = between(line, "\"amount\":", line.endsWith(",") ? "," : "");
                     double a = Double.parseDouble(amt);
-                    Expense last = currentBudget.getExpenses().getAt(0);
+                    Expense last = currentBudget.getExpenses().getAt(currentBudget.getExpenses().size() - 1);
                     last.setAmount(a);
                 }
             }

@@ -1,25 +1,25 @@
 [
   {
-    "id":"arpit",
-    "password":"arpit",
-    "budgets":[
-    ]
-  },
-  {
     "id":"sajal",
     "password":"sajal",
     "budgets":[
       {
         "name":"EMI",
+        "limit":1000.0,
+        "expenses":[
+        ]
+      },
+      {
+        "name":"shopping",
         "limit":2000.0,
         "expenses":[
           {
-            "desc":"Car",
-            "amount":0.0
+            "desc":"food",
+            "amount":500.0
           },
           {
-            "desc":"Bike",
-            "amount":500.0
+            "desc":"clothes",
+            "amount":1000.0
           }
         ]
       }

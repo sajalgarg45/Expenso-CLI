@@ -30,3 +30,6 @@ bin/
 
 ### Mermaid Diagrams ###
 mermaid/
+
+### Data
+data.json

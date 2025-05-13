@@ -1,5 +1,4 @@
 package expensetracker;
-
 import expensetracker.models.*;
 import expensetracker.datastore.DataStore;
 import expensetracker.datastructures.*;
@@ -17,7 +16,11 @@ public class Main {
 
     private static class DeletedExpense {
         Budget budget; Expense expense;
-        DeletedExpense(Budget b, Expense e){ this.budget=b; this.expense=e; }
+
+        DeletedExpense(Budget b, Expense e) {
+            this.budget = b;
+            this.expense = e;
+        }
     }
 
     private static String readString(String prompt) {
@@ -64,7 +67,7 @@ public class Main {
         while (true) {
             ConsoleUtils.clearScreen();
             ConsoleUtils.printBox(new String[]{
-                    "Welcome to ExpenseTrackerCLI",
+                    "Welcome to Expenso-CLI",
                     "1. Login",
                     "2. Register",
                     "0. Exit"
@@ -218,8 +221,16 @@ public class Main {
             });
             int c = readInt("Choose: ");
             if (c == 1) {
-                System.out.print("Desc: "); String d = scanner.nextLine();
-                System.out.print("Amt : "); double a = Double.parseDouble(scanner.nextLine());
+                String d = readString("Desc: ");
+                double a = 0;
+                while (true) {
+                    try {
+                        a = readDouble("Amt: ");
+                        break; // Exit loop if input is valid
+                    } catch (NumberFormatException ex) {
+                        System.out.println("Invalid input. Please enter a numeric value.");
+                    }
+                }
                 if (b.getSpent() + a > b.getLimit()) {
                     ConsoleUtils.printBox(new String[]{"Over Budget!"});
                     scanner.nextLine();
