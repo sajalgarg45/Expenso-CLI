@@ -1,25 +1,41 @@
 [
   {
-    "id":"sajal",
-    "password":"sajal",
+    "id":"arpit",
+    "password":"arpit",
     "budgets":[
-      {
-        "name":"EMI",
-        "limit":1000.0,
-        "expenses":[
-        ]
-      },
       {
         "name":"shopping",
         "limit":2000.0,
         "expenses":[
           {
-            "desc":"food",
-            "amount":500.0
-          },
-          {
             "desc":"clothes",
             "amount":1000.0
+          },
+          {
+            "desc":"food",
+            "amount":500.0
+          }
+        ]
+      },
+      {
+        "name":"EMI",
+        "limit":1000.0,
+        "expenses":[
+        ]
+      }
+    ]
+  },
+  {
+    "id":"arpit-java",
+    "password":"arpit-password",
+    "budgets":[
+      {
+        "name":"EMIs",
+        "limit":5000.0,
+        "expenses":[
+          {
+            "desc":"Bike",
+            "amount":500.0
           }
         ]
       }
